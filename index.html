@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Bus Tracking System</title>
+  <style>
+    body {
+      text-align: center;
+      font-family: Arial, sans-serif;
+      background-color: #f5f7fa;
+    }
+    h2 {
+      background-color: #007bff;
+      color: white;
+      padding: 15px;
+      margin: 0;
+    }
+    #map {
+      height: 500px;
+      width: 85%;
+      margin: 20px auto;
+      border-radius: 12px;
+      border: 3px solid #007bff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    }
+    #refreshBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      border: none;
+      background: #007bff;
+      color: white;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    #refreshBtn:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>Smart Bus Tracking System</h2>
+  <button id="refreshBtn">Refresh Location</button>
+  <div id="map"></div>
+
+  <script>
+    let map, marker;
+
+    async function fetchBusLocation() {
+      try {
+        const res = await fetch('http://localhost:3000/getLocation');
+        const data = await res.json();
+        if (!data || !data.lat || !data.lng) return; // Handle empty data
+        const position = { lat: parseFloat(data.lat), lng: parseFloat(data.lng) };
+        if (!marker) {
+          marker = new google.maps.Marker({
+            position,
+            map,
+            title: "Bus Current Location",
+            icon: {
+              url: "https://maps.google.com/mapfiles/ms/icons/bus.png",
+            },
+          });
+        } else {
+          marker.setPosition(position);
+        }
+        map.setCenter(position);
+      } catch (err) {
+        console.error("Error fetching location:", err);
+      }
+    }
+
+    function initMap() {
+      map = new google.maps.Map(document.getElementById("map"), {
+        center: { lat: 26.8467, lng: 80.9462 }, // Lucknow
+        zoom: 13,
+      });
+      fetchBusLocation();
+      setInterval(fetchBusLocation, 10000); // Auto-refresh every 10 seconds
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", fetchBusLocation);
+  </script>
+
+  <!-- IMPORTANT: Replace YOUR_API_KEY with your actual Google Maps API key -->
+ <script async
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyD12345EXAMPLE&callback=initMap">
+</script>
+
+</body>
+</html>
